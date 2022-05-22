@@ -3,6 +3,12 @@ import smtplib
 from config import *
 
 
+# Записывает в файл полученную строчку
+def write_data_to_txt_file(data_string):
+    with open("log.txt", "a") as file:
+        file.write(data_string)
+
+# Отправляет на почту полученную строчку
 def send_data(data):
     smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
     smtpObj.starttls()
@@ -12,6 +18,7 @@ def send_data(data):
 
     smtpObj.quit()
 
+# Создает запись в таблице Users в базе данных
 def create_user(idtg, usernametg, firstname, lastname):
     if not firstname:
         firstname = 'Null'

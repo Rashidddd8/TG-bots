@@ -1,14 +1,30 @@
 import telebot
 from telebot import types
-from config import token, admin_tg_ids
+
 import datetime
+import sys
+
+from config import token, admin_tg_ids
 import db
 
 
 fio, home, birth, number, comment = '', '', '', '', ''
 
+# Варианты того, как бот будет сохранять данные о пользователях
+method_list = ["none", "text", "csv", "db", "term", "exit"]
+
+# Выбранный способ сохранения данных
+chosen_method = ''
+
 bot = telebot.TeleBot(token)
 word = 0
+
+
+def main(saving_method):
+    global chosen_method
+    chosen_method = saving_method
+    bot.polling(none_stop=True)
+
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -29,9 +45,11 @@ def start(message):
     bot.send_message(message.chat.id,
                      text="В XXI веке разнообразные медицинские заключения занимают важное значение. Их оформление начинается после рождения вплоть до самой смерти. Без справки ты никто! Захотелось в бассейн – предъяви документ. В автошколу, при трудоустройстве – опять требуется резолюция от врача. Купить медицинскую справку можете в нашем центре!".format(
                          message.from_user), reply_markup=markup)
-    print(f'userIDTG: {userIDTG}\nuserNameTG: {userNameTG}\nuserFirstNameTG: {userFirstNameTG}\nuserLastNameTG: {userLastNameTG}')
-    db.create_user(userIDTG, userNameTG, userFirstNameTG, userLastNameTG)
-    db.create_record_btns_table('start', userIDTG, datetime.datetime.now())
+    if chosen_method == "term":
+        print(f'[!] Пользователь нажал кнопку "старт"\n    ID пользователя       : {userIDTG}\n    Username пользователя : {userNameTG}\n    Имя пользователя      : {userFirstNameTG}\n    Фамилия пользователя  : {userLastNameTG}')
+    elif chosen_method == "db":
+        db.create_user(userIDTG, userNameTG, userFirstNameTG, userLastNameTG)
+        db.create_record_btns_table('start', userIDTG, datetime.datetime.now())
 
 @bot.message_handler(commands=['load'])
 def load(message):
@@ -62,16 +80,20 @@ def func(message):
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(btn11, btn12, btn13, btn14, btn15, btn16, btn17, btn18, back)
         bot.send_message(message.chat.id, text="Справки для работы", reply_markup=markup)
-        
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Поддержка"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(back)
         bot.send_message(message.chat.id, text="Наш менеджер ответит на все Ваши вопросы! Пишите: @Tatarinnnnnnn", reply_markup=markup)
-        
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Для учащихся"):
@@ -87,8 +109,10 @@ def func(message):
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(btn21, btn22, btn23, btn24, btn25, btn26, btn27, btn28, back)
         bot.send_message(message.chat.id, text="Справки для учащихся", reply_markup=markup)
-        
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Для ребёнка"):
@@ -108,7 +132,11 @@ def func(message):
         markup.add(btn31, btn32, btn33, btn34, btn35, btn36, btn37, btn38, btn39, btn331, btn332, back)
         bot.send_message(message.chat.id, text="Справки для ребёнка", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
 
@@ -125,7 +153,11 @@ def func(message):
         markup.add(btn41, btn42, btn43, btn44, btn45, btn46, back)
         bot.send_message(message.chat.id, text="Справки для спорта", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Для отдыха"):
@@ -141,7 +173,11 @@ def func(message):
         markup.add(btn51, btn52, btn53, btn54, btn55, btn56, btn57, back)
         bot.send_message(message.chat.id, text="Справки для отдыха", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "По врачам"):
@@ -164,7 +200,11 @@ def func(message):
         markup.add(btn61, btn62, btn63, btn64, btn65, btn66, btn67, btn68, btn69, btn161, btn162, btn163, btn164, btn165, back)
         bot.send_message(message.chat.id, text="Справки от докторов", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Из диспансеров"):
@@ -179,7 +219,11 @@ def func(message):
         markup.add(btn71, btn72, btn73, btn74, btn75, btn76, back)
         bot.send_message(message.chat.id, text="Справки из диспансеров", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Прочие справки"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -198,7 +242,11 @@ def func(message):
         markup.add(btn81, btn82, btn83, btn84, btn85, btn86, btn87, btn88, btn89,  btn182, btn183, back)
         bot.send_message(message.chat.id, text="Прочие справки", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == 'Анализы'):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -224,7 +272,11 @@ def func(message):
         markup.add(btn91, btn92, btn93, btn94, btn95, btn96, btn97, btn98, btn99, btn191, btn192, btn193, btn194, btn195, btn196, btn197, btn198, btn199,  back)
         bot.send_message(message.chat.id, text="Анализы", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Прививки"):
@@ -242,10 +294,11 @@ def func(message):
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(btn201, btn202, btn203, btn204, btn205, btn206, btn207, btn208, btn209, btn210, back)
         bot.send_message(message.chat.id, text="Справки для отдыха", reply_markup=markup)
-        
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
-
-
+                
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "От нарколога и психиатра"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -256,7 +309,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "086у для работы"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -268,7 +325,11 @@ def func(message):
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         #bot.send_message(message.chat.id, text="Введите ФИО, ваш номер телефона, дату рождения, прописку, место и время доставки", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "От нарколога и психиатра"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -279,7 +340,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Приказ 302н"):
@@ -291,9 +356,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
-
-
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Паспорт здоровья работника"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -304,7 +371,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1600 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка на госслужбу"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -315,7 +386,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "989н для гостайны"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -326,8 +401,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
-
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "027/у о болезни"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -338,8 +416,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
-
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Для работы форма 405"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -350,7 +431,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "086у для поступления"):
@@ -362,7 +447,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "О временной нетрудоспособности учащихся 095/у"):
@@ -374,7 +463,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Выписка из истории болезни форма 027/у"):
@@ -386,7 +479,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "На закрытие пропусков от 14 дней(095/у + 027/у)"):
@@ -398,7 +495,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка для академического отпуска"):
@@ -410,7 +511,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 3000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Для выхода из академического отпуска"):
@@ -422,7 +527,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1600 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Освобождение от физкультуры"):
@@ -434,7 +543,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка от врача в свободной форме"):
@@ -446,7 +559,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка в бассейн"):
@@ -458,7 +575,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 700 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Для домашнего обучения"):
@@ -468,7 +589,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Об отсутствии контактов с больными"):
@@ -480,7 +605,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Санаторно-курортная карта для детей 076/у"):
@@ -492,7 +621,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка в лагерь форма 079/у"):
@@ -504,7 +637,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Анализ кала - соскоб"):
@@ -516,7 +653,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Карта профилактических прививок 063/у"):
@@ -528,7 +669,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Мед. карта ребёнка 026/у"):
@@ -540,7 +685,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 3500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка от педиатра"):
@@ -552,7 +701,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Для оформления опеки над ребёнком 164/ - 96"):
@@ -564,7 +717,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 2500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка реакции Манту"):
@@ -576,7 +733,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка в бассейн"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -587,7 +748,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 700 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка в спортзал"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -598,7 +763,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 700 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка для марафона"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -609,7 +778,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 700 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка для ГТО"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -620,7 +793,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 700 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка для соревнований"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -631,7 +808,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 700 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка в спортивную секцию"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -642,7 +823,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 700 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Санаторно-курортная карта 072/у"):
@@ -654,7 +839,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка 070/у для получения путевки"):
@@ -666,7 +855,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Санаторно-курортная карта для детей 076/у"):
@@ -678,7 +871,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка 079/у для лагеря"):
@@ -690,7 +887,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка 082/у для выезда за границу"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -701,7 +902,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Сертификат прививок 156/-93"):
@@ -713,7 +918,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 2100 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка в Артек форма 159/у-02"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -724,7 +933,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от терапевта"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -735,7 +948,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от педиатра"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -746,7 +963,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от фтизиатра"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -757,7 +978,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от гинеколога"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -768,7 +993,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от нарколога"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -779,7 +1008,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от психиатра"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -790,7 +1023,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от стоматолога"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -801,7 +1038,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от невролога"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -812,7 +1053,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от хирурга"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -823,7 +1068,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от гастроэнтеролога"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -832,7 +1081,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от травматолога"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -843,7 +1096,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от лора"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -854,7 +1111,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от психолога"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -865,7 +1126,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка от аллерголога"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -876,7 +1141,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка из наркологического диспансера"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -887,7 +1156,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка из онкологического диспансера"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -896,7 +1169,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка из физкультурного диспансера"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -907,7 +1184,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка из психоневрологического диспансера"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -918,7 +1199,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка из противотуберкулезного диспансера"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -927,7 +1212,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка из кожно-венерологического диспансера"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -936,7 +1225,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка в бассейн"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -947,7 +1240,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 700 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка в Китай"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -956,7 +1253,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - от 2500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Справка ХТИ"):
@@ -968,7 +1269,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка КЭК"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -979,7 +1284,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - от 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка о беременности"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -990,7 +1299,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка о контактах"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1001,7 +1314,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка флюорография"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1012,7 +1329,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка о кодировании от алкоголизма"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1023,7 +1344,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка из травмпункта"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1034,7 +1359,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка донора форма 402/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1045,7 +1374,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Направление на госпитализацию форма 057/у-04"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1056,7 +1389,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ мочи (общий) по форме 210/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1067,7 +1404,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ крови – реакция Видаля, по форме 242/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1076,7 +1417,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ мочи по Зимницкому по форме 211/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1085,7 +1430,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ крови (общий) по форме 224/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1096,7 +1445,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ мокроты по форме 216/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1105,7 +1458,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Анализ кала (общий) по форме 219/у"):
@@ -1117,7 +1474,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Анализ кала – яйца глист (гельминтов), скрытая кровь, стеркобилин, билирубин по форме 220/у"):
@@ -1127,7 +1488,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ кала на кишечную группу"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1138,7 +1503,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Соскоб на энтеробиоз"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1149,7 +1518,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ мочи (Активность альфа-амилазы) по форме 214/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1158,7 +1531,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ крови / мочи на наличие в крови алкоголя"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1167,7 +1544,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ крови / мочи на наличие в крови наркотических веществ"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1176,7 +1557,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Биохимический анализ крови 228/у"):
@@ -1188,7 +1573,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Анализ кала на дисбактериоз"):
@@ -1198,7 +1587,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ крови на гепатит B, C"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1209,7 +1602,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Анализ (сертификат) на ВИЧ"):
@@ -1221,7 +1618,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ крови – реакция Вассермана (RW) и др. по форме 241/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1230,7 +1631,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1200 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Анализ крови / мочи – содержание гормонов и медиаторов по форме 235/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1239,7 +1644,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Прививочный сертификат 156/у-93"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1250,7 +1659,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 2100 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка реакция Манту"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1261,7 +1674,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Карта профилактических прививок форма 063/у"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1272,7 +1689,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1500 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка о прививке от кори"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1283,7 +1704,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка о прививке от гепатита"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1292,7 +1717,11 @@ def func(message):
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка о прививке от гриппа"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1303,7 +1732,10 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка о прививке адсм"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1311,8 +1743,11 @@ def func(message):
         back = types.KeyboardButton("Вернуться в главное меню")
         markup.add(btn0, back)
         bot.send_message(message.chat.id, text="Цена - 800 рублей", reply_markup=markup)
-        
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Медотвод от прививок"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1323,7 +1758,11 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка диаскинтест"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1334,7 +1773,10 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     elif (message.text == "Справка квантифероновый тест"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1345,7 +1787,10 @@ def func(message):
         bot.send_photo(message.chat.id, p)
         bot.send_message(message.chat.id, text="Цена - 1000 рублей", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Оформление справки"):
@@ -1357,7 +1802,10 @@ def func(message):
         global word
         word = 1
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
 
     elif (message.text == "Вернуться в главное меню"):
@@ -1374,7 +1822,10 @@ def func(message):
         markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9)
         bot.send_message(message.chat.id, text="Вы вернулись в главное меню", reply_markup=markup)
         
-        db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
+        if chosen_method == "term":
+            print(f"[+] Пользователь нажал на кнопку {message.text}")
+        elif chosen_method == "db":
+            db.create_record_btns_table(message.text, userIDTG, datetime.datetime.now())
 
     else:
         if word == 1:
@@ -1417,9 +1868,33 @@ def func(message):
             word = 6
             global comment
             comment = message.text
-            db.create_application(message.from_user.id, fio, home, birth, number, comment)
+            if chosen_method == "term":
+                print(f"[!] Пользователь оставил заявку\n    ID Пользователя : {message.from_user.id}\n    ФИО пользователя : {fio}\n    Адрес прописки пользователя : {home}\n    Дата рождения пользователя : {birth}\n    Номер телефона пользователя : {number}\n    Комментарий пользователя : {comment}")
+            elif chosen_method == "db":
+                db.create_application(message.from_user.id, fio, home, birth, number, comment)
         else:
             bot.send_message(message.chat.id, text="Я Вас не понимаю :(")
 
-
-bot.polling(none_stop=True)
+if __name__ == "__main__":
+    # виды записи  данных ["none", "text", "csv", "db", "term", "exit"]
+    try:
+        saving_method = sys.argv[1]
+        if saving_method not in method_list:
+            print("[?] Выберите, как бот будет сохранять данные о пользователях\n    Варианты сохранения:\n    none  -->  Не сохранять\n    text  -->  Сохранять в текстовый документ\n    csv   -->  Сохранять в таблицу\n    db    -->  Сохранять в базу данных\n    term  -->  Выводить в терминал\n    exit  -->  Выйти")
+            while True:
+                saving_method = input()
+                if saving_method in method_list:
+                    break
+                else:
+                    print("[!] Неверный вид запаси данных о пользователях")
+    except IndexError:
+        print("[?] Выберите, как бот будет сохранять данные о пользователях\n    Варианты сохранения:\n    none  -->  Не сохранять\n    text  -->  Сохранять в текстовый документ\n    csv   -->  Сохранять в таблицу\n    db    -->  Сохранять в базу данных\n    term  -->  Выводить в терминал\n    exit  -->  Выйти")
+        while True:
+            saving_method = input("    ")
+            if saving_method in method_list:
+                break
+            else:
+                print("[!] Неверный вид запаси данных о пользователях")
+    if saving_method != 'exit':
+        print("[!] Бот запущен\n")
+        main(saving_method)
