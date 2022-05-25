@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+</head>
+<body>
+<form action="index.php" method="POST">
+    <input name="INN" type="text" placeholder="ИНН"/><br>
+    <input name="Name of organization" type="text" placeholder="Название организации"/><br>
+    <input name="Adress" type="text" placeholder="Адрес организации"/><br>
+    <input name="Number of organization" type="text" placeholder="Номер телефона организации"/><br>
+    <input name="Supervisor" type="text" placeholder="Руководитель"/><br>
+    <input name="Shedule" type="text" placeholder="График работы"/><br>
+    <input name="First name" type="text" placeholder="Имя"/><br>
+    <input name="Last name" type="text" placeholder="Фамилия"/><br>
+    <input name="Patronymic" type="text" placeholder="Отчество"/><br>
+    <input name="Date of employment" type="text" placeholder="Дата принятия на работу"/><br>
+    <input name="Subdivision" type="text" placeholder="Подразделение"/><br>
+    <input name="Password" type="password" placeholder="Пароль" pattern='(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}' required /><br>
+    <p style="font-size: 70%;">Пароль должен состоять минимум из 8 символов и содержать хотя бы одну цифру и один символ нижнего и верхнего регистра</p>
+    <p><input type="checkbox" name="a" value="1417"> Согласие на обработку персональных данных</p>
+    <input type="submit" value="Отправить"/><br><br>
+    <a style="text-decoration: none; color: black;" href="auth.html">Войдите, если вы уже зарегистрированы</a>
+</form>
+</body>
+</html>
